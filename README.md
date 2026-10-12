@@ -39,7 +39,7 @@ Manajemen state memakai hook bawaan React dan Context API (untuk data login), ta
 1. Clone repository dan masuk ke foldernya:
 
    ```bash
-   git clone <alamat-repository-ini>
+   git clone <https://github.com/USERNAME-KAMU/sipus-frontend-petugas.git>
    cd sipus-frontend-petugas
    ```
 
