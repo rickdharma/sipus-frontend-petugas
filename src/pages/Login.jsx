@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { User, Lock, Eye, EyeOff, BookOpen, AlertCircle, Loader2 } from "lucide-react";
+import { User, Lock, Eye, EyeOff, AlertCircle, Loader2 } from "lucide-react";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
+import { LogoImage } from "../components/Logo";
 
 function Login() {
   const [identityNumber, setIdentityNumber] = useState("");
@@ -50,12 +51,17 @@ function Login() {
         <div className="bg-white rounded-2xl shadow-xl shadow-slate-200/60 border border-slate-200/80 p-8 sm:p-10">
           {/* Header */}
           <div className="flex flex-col items-center text-center mb-8">
-            <div className="w-12 h-12 rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center mb-3 shadow-2xs">
-              <BookOpen size={24} className="stroke-[2.2]" />
+            <div className="mb-3.5">
+              <LogoImage size={56} className="shadow-md shadow-indigo-500/10" />
             </div>
-            <h1 className="text-xl font-bold text-slate-900 tracking-tight">Portal Petugas Perpustakaan</h1>
-            <p className="text-xs text-slate-500 mt-1">
-              Masukkan nomor induk dan kata sandi petugas piket
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-bold text-slate-900 tracking-tight">SIPUS</h1>
+              <span className="text-[10px] font-bold tracking-wider px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 uppercase border border-indigo-200/60">
+                Portal Petugas
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 mt-1.5">
+              Sistem Informasi Perpustakaan Sekolah
             </p>
           </div>
 

@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
+import { LogoImage } from "./Logo";
 
 const menu = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -80,16 +81,21 @@ function Layout() {
         </button>
 
         <div
-          className={`p-4 flex items-center gap-3 border-b border-white/10 ${
+          className={`p-4 flex items-center border-b border-white/10 ${
             collapsed ? "md:justify-center" : ""
           }`}
         >
-          <div className="w-9 h-9 shrink-0 rounded-lg bg-primary flex items-center justify-center">
-            <BookOpen size={18} />
-          </div>
-          <div className={collapsed ? "md:hidden" : ""}>
-            <h1 className="font-bold leading-tight">SIPUS</h1>
-            <p className="text-xs text-indigo-200">Portal Petugas</p>
+          <div className="flex items-center gap-3">
+            <LogoImage size={34} className="rounded-lg shadow-sm" />
+            <div className={collapsed ? "md:hidden" : ""}>
+              <div className="flex items-center gap-1.5">
+                <span className="font-bold text-base tracking-tight text-white leading-tight">SIPUS</span>
+                <span className="text-[10px] font-semibold tracking-wider px-1.5 py-0.5 rounded bg-indigo-500/25 text-indigo-200 uppercase leading-none border border-indigo-400/20">
+                  Staff
+                </span>
+              </div>
+              <p className="text-xs text-indigo-200 font-normal leading-tight mt-0.5">Portal Petugas</p>
+            </div>
           </div>
         </div>
 
