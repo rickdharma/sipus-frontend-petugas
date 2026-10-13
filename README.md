@@ -13,6 +13,7 @@ Repository ini hanya berisi **frontend petugas**.
 - **Peminjaman Langsung**: catat peminjaman di tempat untuk siswa, guru, staf, atau tamu. Satu transaksi bisa berisi beberapa buku.
 - **Pengembalian Buku**: catat pengembalian, transaksi yang terlambat ditampilkan paling atas.
 - **Riwayat Transaksi**: seluruh transaksi dengan filter status.
+- **Navigasi sidebar** yang bisa dilipat (expand/collapse) dan otomatis menjadi blok menu di atas pada layar kecil.
 
 ## Tech Stack
 
@@ -26,7 +27,7 @@ Repository ini hanya berisi **frontend petugas**.
 | Ikon | lucide-react |
 | Linter | ESLint |
 
-Manajemen state memakai hook bawaan React dan Context API (untuk data login), tanpa library tambahan.
+Manajemen state memakai hook bawaan React dan Context API (untuk data login), dan satu custom hook (usePaginatedData) untuk data berhalaman. Tidak ada library state management tambahan.
 
 ## Prasyarat
 
@@ -88,7 +89,14 @@ C -->|return| D[RETURNED]
 A -->|reject| E[REJECTED]
 ```
 
-Di antarmuka petugas, tombol **Setujui** menjalankan `approve` lalu langsung `borrow` secara berurutan, sehingga status langsung menjadi `BORROWED` dan stok berkurang saat itu juga. Stok bertambah kembali saat `return`.
+| Tahap | Aksi di antarmuka | Efek di backend |
+|---|---|---|
+| PENDING menjadi APPROVED | Tombol **Setujui** (tab Menunggu Persetujuan) | Petugas menyiapkan buku. Stok belum berkurang. |
+| APPROVED menjadi BORROWED | Tombol **Konfirmasi Pengambilan** (tab Siap Diambil) | Stok berkurang, `borrowed_at` dicatat, `due_date` dihitung otomatis. |
+| BORROWED menjadi RETURNED | Tombol **Catat Pengembalian** (halaman Pengembalian) | Stok bertambah kembali, `returned_at` dicatat. |
+| PENDING menjadi REJECTED | Tombol **Tolak** (alasan opsional) | Transaksi selesai. |
+
+Peminjaman langsung di tempat melewati semua tahap di atas: status langsung `BORROWED` dan stok langsung berkurang.
 
 ## Endpoint API yang Digunakan
 
@@ -99,15 +107,15 @@ Semua path relatif terhadap `VITE_API_URL` (misalnya `.../api/v1`). Setelah logi
 | Login | POST | `/auth/login` (body: `identity_number`, `password`) |
 | Logout | POST | `/auth/logout` |
 | Statistik dashboard | GET | `/staff/dashboard` |
-| Daftar buku | GET | `/staff/books` |
-| Tambah buku | POST | `/staff/books` |
-| Ubah buku | POST | `/staff/books/{id}` (dengan field `_method=PUT`) |
+| Daftar buku | GET | `/staff/books` (query: `search`, `page`, `per_page`) |
+| Tambah buku | POST | `/staff/books` (multipart/form-data) |
+| Ubah buku | POST | `/staff/books/{id}` (multipart/form-data dengan field `_method=PUT`) |
 | Hapus buku | DELETE | `/staff/books/{id}` |
-| Daftar transaksi | GET | `/staff/borrowings` |
-| Riwayat transaksi | GET | `/staff/borrowings/history` |
+| Daftar transaksi | GET | `/staff/borrowings` (query: `status`, `page`, `per_page`) |
+| Riwayat transaksi | GET | `/staff/borrowings/history` (query: `status`, `page`, `per_page`) |
 | Setujui pengajuan | POST | `/staff/borrowings/{id}/approve` |
 | Tolak pengajuan | POST | `/staff/borrowings/{id}/reject` (body opsional: `notes`) |
-| Serahkan buku | POST | `/staff/borrowings/{id}/borrow` |
+| Konfirmasi pengambilan | POST | `/staff/borrowings/{id}/borrow` |
 | Catat pengembalian | POST | `/staff/borrowings/{id}/return` |
 | Peminjaman langsung | POST | `/staff/borrowings/direct` |
 
@@ -117,8 +125,9 @@ Dokumentasi lengkap ada di Swagger.
 
 ```
 src/
-├── components/   # Layout, Modal, ProtectedRoute, StatusBadge, BorrowedItems
+├── components/   # Layout, DataTable, Modal, ProtectedRoute, StatusBadge, BorrowedItems
 ├── context/      # AuthContext (status login dan token)
+├── hooks/        # usePaginatedData (pengambilan data berhalaman, pencarian, filter)
 ├── pages/        # Login, Dashboard, KelolaBuku, PermintaanPeminjaman,
 │                 # PeminjamanLangsung, Pengembalian, RiwayatTransaksi
 ├── services/     # api.js (instance Axios, token otomatis, penanganan 401)
@@ -132,12 +141,12 @@ Untuk mengganti warna tema, ubah nilai di blok `@theme` pada `src/index.css`.
 
 ## Catatan dan Batasan Saat Ini
 
-- **Cover buku**: form mengirim file gambar (multipart), sedangkan dokumentasi API mendefinisikan `cover` sebagai string URL.
-- **ISBN**: validasi ISBN sebagai kode unik agar tidak duplikat.
-- **Pagination**: daftar mengambil hingga 100 data per request (`per_page=100`) dan belum punya navigasi halaman.
+- **Pencarian dan pengurutan**: pencarian hanya tersedia di Kelola Data Buku. Endpoint transaksi belum mendukung parameter `search`, dan belum ada parameter pengurutan (sort) di semua endpoint daftar.
 - **Peminjaman langsung** tidak mengirim `user_id` (belum ada endpoint pencarian user), sehingga transaksinya tidak terhubung ke akun siswa.
-- **Setujui** adalah dua request berurutan yang tidak atomik. Jika `borrow` gagal setelah `approve` berhasil, transaksi tertahan di status `APPROVED` dan muncul tombol **Serahkan Buku** untuk mencoba lagi.
+- **Dashboard** mengambil hingga 100 data buku dan 100 pengajuan untuk menentukan widget stok rendah dan pengajuan terbaru. Untuk koleksi yang jauh lebih besar, widget ini perlu endpoint khusus.
 - **Stok rendah** di dashboard memakai batas stok kurang dari atau sama dengan 2 (konstanta `LOW_STOCK_THRESHOLD` di `src/pages/Dashboard.jsx`).
+- **Penanda Terlambat** memakai field `is_overdue` dari backend. Jika field itu tidak dikirim, penanda tidak tampil.
+- **Riwayat transaksi** memakai endpoint `/staff/borrowings/history`, yang menurut panduan API berisi transaksi selesai atau ditolak.
 
 ## Alur Kerja Git
 

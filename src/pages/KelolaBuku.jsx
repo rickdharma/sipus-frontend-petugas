@@ -1,7 +1,9 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import api from "../services/api";
 import Modal from "../components/Modal";
+import DataTable from "../components/DataTable";
+import { usePaginatedData } from "../hooks/usePaginatedData";
 import { getErrorMessage } from "../utils/getErrorMessage";
 
 const emptyForm = {
@@ -24,9 +26,7 @@ const fields = [
 ];
 
 function KelolaBuku() {
-  const [books, setBooks] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const table = usePaginatedData("/staff/books", { errorMessage: "Gagal memuat data buku" });
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -34,20 +34,6 @@ function KelolaBuku() {
   const [coverFile, setCoverFile] = useState(null);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState("");
-
-  function fetchBooks() {
-    setLoading(true);
-    setError("");
-    api
-      .get("/staff/books", { params: { per_page: 100 } })
-      .then((res) => setBooks(res.data.data ?? []))
-      .catch((err) => setError(getErrorMessage(err, "Gagal memuat data buku")))
-      .finally(() => setLoading(false));
-  }
-
-  useEffect(() => {
-    fetchBooks();
-  }, []);
 
   function openAddModal() {
     setEditingId(null);
@@ -79,26 +65,15 @@ function KelolaBuku() {
 
   function handleSubmit(e) {
     e.preventDefault();
+    setSaving(true);
+    setFormError("");
 
-  const isbnDipakai = books.some(
-    (b) => b.isbn === form.isbn.trim() && b.id !== editingId
-  );
-  if (isbnDipakai) {
-    setFormError("ISBN sudah terdaftar pada buku lain");
-    return;
-  }
-
-  setSaving(true);
-  setFormError("");
-
-    // Upload file harus dikirim sebagai FormData (multipart), bukan JSON biasa
     const data = new FormData();
     Object.entries(form).forEach(([key, value]) => data.append(key, value));
     if (coverFile) data.append("cover", coverFile);
 
     let request;
     if (editingId) {
-      // Pola umum Laravel: kirim POST dengan _method=PUT agar form-data terbaca
       data.append("_method", "PUT");
       request = api.post(`/staff/books/${editingId}`, data);
     } else {
@@ -108,7 +83,7 @@ function KelolaBuku() {
     request
       .then(() => {
         setIsModalOpen(false);
-        fetchBooks();
+        table.refetch();
       })
       .catch((err) => setFormError(getErrorMessage(err, "Gagal menyimpan data buku")))
       .finally(() => setSaving(false));
@@ -119,16 +94,56 @@ function KelolaBuku() {
 
     api
       .delete(`/staff/books/${book.id}`)
-      .then(() => fetchBooks())
+      .then(() => table.refetch())
       .catch((err) => alert(getErrorMessage(err, "Gagal menghapus buku")));
   }
 
-  if (loading) return <p>Memuat data...</p>;
-  if (error) return <p className="text-danger">{error}</p>;
+  const columns = [
+    {
+      header: "ISBN",
+      cell: (b) => <span className="font-mono text-xs text-slate-500">{b.isbn}</span>,
+    },
+    { header: "Judul Buku", cell: (b) => <span className="font-semibold">{b.title}</span> },
+    { header: "Penulis", cell: (b) => b.author },
+    {
+      header: "Penerbit / Thn",
+      cell: (b) => (
+        <span className="text-slate-500">
+          {b.publisher} ({b.publication_year})
+        </span>
+      ),
+    },
+    {
+      header: "Stok",
+      cell: (b) => <span className={`font-bold ${b.stock === 0 ? "text-danger" : ""}`}>{b.stock}</span>,
+    },
+    {
+      header: "Aksi",
+      align: "right",
+      cell: (b) => (
+        <div className="flex justify-end gap-2">
+          <button
+            onClick={() => openEditModal(b)}
+            title="Edit"
+            className="p-2 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200"
+          >
+            <Pencil size={14} />
+          </button>
+          <button
+            onClick={() => handleDelete(b)}
+            title="Hapus"
+            className="p-2 rounded-lg bg-red-50 text-danger hover:bg-red-100"
+          >
+            <Trash2 size={14} />
+          </button>
+        </div>
+      ),
+    },
+  ];
 
   return (
-    <div>
-      <div className="bg-white rounded-xl shadow-sm p-4 flex justify-between items-center mb-4">
+    <div className="flex flex-col gap-4">
+      <div className="bg-white rounded-xl shadow-sm p-4 flex justify-between items-center">
         <h2 className="font-bold">Manajemen Koleksi Buku</h2>
         <button
           onClick={openAddModal}
@@ -138,57 +153,13 @@ function KelolaBuku() {
         </button>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm overflow-x-auto">
-        {books.length === 0 ? (
-          <p className="p-6 text-gray-500">Belum ada data buku.</p>
-        ) : (
-          <table className="w-full text-left text-sm">
-            <thead>
-              <tr className="text-xs uppercase text-slate-400">
-                <th className="p-4 font-semibold">ISBN</th>
-                <th className="p-4 font-semibold">Judul Buku</th>
-                <th className="p-4 font-semibold">Penulis</th>
-                <th className="p-4 font-semibold">Penerbit / Thn</th>
-                <th className="p-4 font-semibold">Stok</th>
-                <th className="p-4 font-semibold text-right">Aksi</th>
-              </tr>
-            </thead>
-            <tbody>
-              {books.map((book) => (
-                <tr key={book.id} className="border-t border-slate-100">
-                  <td className="p-4 font-mono text-xs text-slate-500">{book.isbn}</td>
-                  <td className="p-4 font-semibold">{book.title}</td>
-                  <td className="p-4">{book.author}</td>
-                  <td className="p-4 text-slate-500">
-                    {book.publisher} ({book.publication_year})
-                  </td>
-                  <td className={`p-4 font-bold ${book.stock === 0 ? "text-danger" : ""}`}>
-                    {book.stock}
-                  </td>
-                  <td className="p-4">
-                    <div className="flex justify-end gap-2">
-                      <button
-                        onClick={() => openEditModal(book)}
-                        title="Edit"
-                        className="p-2 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200"
-                      >
-                        <Pencil size={14} />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(book)}
-                        title="Hapus"
-                        className="p-2 rounded-lg bg-red-50 text-danger hover:bg-red-100"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+      <DataTable
+        columns={columns}
+        table={table}
+        searchable
+        searchPlaceholder="Cari judul, penulis, atau ISBN..."
+        emptyText="Belum ada data buku."
+      />
 
       <Modal
         isOpen={isModalOpen}
@@ -197,9 +168,7 @@ function KelolaBuku() {
       >
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
           {formError && (
-            <p className="text-danger text-sm bg-red-50 p-2 rounded whitespace-pre-line">
-              {formError}
-            </p>
+            <p className="text-danger text-sm bg-red-50 p-2 rounded whitespace-pre-line">{formError}</p>
           )}
 
           {fields.map((f) => (
@@ -229,26 +198,20 @@ function KelolaBuku() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">Cover (opsional)</label>
+            <label className="block text-sm font-medium mb-1">Cover (opsional, JPG/PNG/WEBP maks 2MB)</label>
             <input
               type="file"
-              accept="image/*"
+              accept="image/jpeg,image/png,image/webp"
               onChange={(e) => setCoverFile(e.target.files[0] ?? null)}
               className="text-sm w-full"
             />
             {editingId && (
-              <p className="text-xs text-slate-500 mt-1">
-                Kosongkan jika tidak ingin mengganti cover.
-              </p>
+              <p className="text-xs text-slate-500 mt-1">Kosongkan jika tidak ingin mengganti cover.</p>
             )}
           </div>
 
           <div className="flex justify-end gap-2 mt-2">
-            <button
-              type="button"
-              onClick={() => setIsModalOpen(false)}
-              className="px-4 py-2 rounded-lg border"
-            >
+            <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 rounded-lg border">
               Batal
             </button>
             <button

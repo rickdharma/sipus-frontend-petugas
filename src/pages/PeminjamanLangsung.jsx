@@ -13,7 +13,7 @@ const borrowerTypes = [
 
 // Aturan dari dokumentasi API: guru maks 7 hari, selain itu maks 3 hari
 function maxDays(type) {
-  return type === "teacher" ? 7 : 3;
+  return type === "teacher" || type === "staff" ? 7 : 3;
 }
 
 function addDays(days) {

@@ -13,3 +13,7 @@ export function toDateInputValue(date) {
   const d = String(date.getDate()).padStart(2, "0");
   return `${y}-${m}-${d}`;
 }
+// Kode transaksi dari backend (mis. BOR-20261012-0008), cadangan: #id
+export function kodeTransaksi(b) {
+  return b.transaction_code ?? `#${b.id}`;
+}
