@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, Search } from "lucide-react";
+import { ChevronLeft, ChevronRight, Search, SearchX, Inbox, AlertCircle, RotateCw } from "lucide-react";
 
 const PER_PAGE_OPTIONS = [5, 10, 25, 50, 100];
 
@@ -37,27 +37,89 @@ function DataTable({
   let body;
   if (error) {
     body = (
-      <div className="p-6">
-        <p className="text-danger">{error}</p>
-        <button onClick={refetch} className="mt-2 text-sm font-semibold text-primary hover:underline">
-          Coba lagi
+      <div className="py-14 px-6 flex flex-col items-center justify-center text-center">
+        <div className="w-11 h-11 rounded-xl bg-rose-50 text-rose-600 border border-rose-200/80 flex items-center justify-center mb-3">
+          <AlertCircle size={20} />
+        </div>
+        <h3 className="text-sm font-bold text-slate-800">Gagal Memuat Data</h3>
+        <p className="text-xs text-slate-500 max-w-sm mt-1 mb-4 leading-relaxed">{error}</p>
+        <button
+          type="button"
+          onClick={refetch}
+          className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-slate-900 hover:bg-black text-white text-xs font-semibold shadow-2xs transition-colors cursor-pointer"
+        >
+          <RotateCw size={13} />
+          <span>Coba Muat Ulang</span>
         </button>
       </div>
     );
   } else if (loading && rows.length === 0) {
-    body = <p className="p-6 text-slate-500">Memuat data...</p>;
-  } else if (rows.length === 0) {
     body = (
-      <p className="p-6 text-slate-500">
-        {search ? `Tidak ada hasil untuk "${search}".` : emptyText}
-      </p>
+      <div className="overflow-x-auto">
+        <table className="w-full text-left text-sm">
+          <thead>
+            <tr className="text-xs uppercase text-slate-400 border-b border-slate-100 bg-slate-50/30">
+              {columns.map((col) => (
+                <th key={col.header} className={`p-4 font-semibold ${alignClass(col)}`}>
+                  {col.header}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100 animate-pulse">
+            {[1, 2, 3, 4].map((i) => (
+              <tr key={i}>
+                {columns.map((col, j) => (
+                  <td key={j} className="p-4">
+                    <div className="h-4 bg-slate-100 rounded w-3/4" />
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     );
+  } else if (rows.length === 0) {
+    if (search) {
+      body = (
+        <div className="py-14 px-6 flex flex-col items-center justify-center text-center">
+          <div className="w-12 h-12 rounded-xl bg-slate-100 text-slate-400 border border-slate-200/80 flex items-center justify-center mb-3">
+            <SearchX size={22} />
+          </div>
+          <h3 className="text-sm font-bold text-slate-800">Tidak Ada Hasil Ditemukan</h3>
+          <p className="text-xs text-slate-500 max-w-sm mt-1 mb-4 leading-relaxed">
+            Tidak ditemukan data yang cocok dengan kata kunci{" "}
+            <strong className="text-slate-700 font-medium">"{search}"</strong>. Coba periksa kembali ejaan atau gunakan kata kunci lain.
+          </p>
+          <button
+            type="button"
+            onClick={() => setSearch("")}
+            className="px-3.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-2xs transition-colors cursor-pointer"
+          >
+            Reset Pencarian
+          </button>
+        </div>
+      );
+    } else {
+      body = (
+        <div className="py-14 px-6 flex flex-col items-center justify-center text-center">
+          <div className="w-12 h-12 rounded-xl bg-slate-100 text-slate-400 border border-slate-200/80 flex items-center justify-center mb-3">
+            <Inbox size={22} />
+          </div>
+          <h3 className="text-sm font-bold text-slate-800">Data Belum Tersedia</h3>
+          <p className="text-xs text-slate-500 max-w-sm mt-1 leading-relaxed">
+            {emptyText}
+          </p>
+        </div>
+      );
+    }
   } else {
     body = (
       <div className={`overflow-x-auto ${loading ? "opacity-50" : ""}`}>
         <table className="w-full text-left text-sm">
           <thead>
-            <tr className="text-xs uppercase text-slate-400">
+            <tr className="text-xs uppercase text-slate-400 border-b border-slate-100">
               {columns.map((col) => (
                 <th key={col.header} className={`p-4 font-semibold ${alignClass(col)}`}>
                   {col.header}
@@ -67,7 +129,7 @@ function DataTable({
           </thead>
           <tbody>
             {rows.map((row) => (
-              <tr key={row.id} className="border-t border-slate-100 align-top">
+              <tr key={row.id} className="border-t border-slate-100 align-top hover:bg-slate-50/50 transition-colors">
                 {columns.map((col) => (
                   <td key={col.header} className={`p-4 ${alignClass(col)}`}>
                     {col.cell(row)}
