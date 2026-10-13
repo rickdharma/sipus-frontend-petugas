@@ -1,7 +1,7 @@
 const styles = {
   PENDING: {
     badge: "bg-amber-50 text-amber-800 border-amber-200/80",
-    dot: "bg-amber-500 animate-pulse",
+    dot: "bg-amber-500",
   },
   APPROVED: {
     badge: "bg-indigo-50 text-indigo-700 border-indigo-200/80",
