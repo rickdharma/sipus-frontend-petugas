@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { User, Lock, Eye, EyeOff, AlertCircle, Loader2 } from "lucide-react";
+import { User, Lock, Eye, EyeOff, AlertCircle, Loader2, ShieldCheck, BookOpen } from "lucide-react";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import { LogoImage } from "../components/Logo";
+import loginBg from "../assets/login-bg.jpg";
 
 function Login() {
   const [identityNumber, setIdentityNumber] = useState("");
@@ -45,23 +46,35 @@ function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4 py-8">
-      <div className="w-full max-w-md">
-        {/* Main Card */}
-        <div className="bg-white rounded-2xl shadow-xl shadow-slate-200/60 border border-slate-200/80 p-8 sm:p-10">
-          {/* Header */}
-          <div className="flex flex-col items-center text-center mb-8">
-            <div className="mb-3.5">
-              <LogoImage size={56} className="shadow-md shadow-indigo-500/10" />
-            </div>
+    <div className="min-h-screen flex flex-col lg:flex-row bg-white">
+      {/* Kolom Kiri: Sidebar Form Login Petugas (Kompak & Fokus) */}
+      <div className="w-full lg:w-[420px] xl:w-[460px] 2xl:w-[480px] lg:shrink-0 flex flex-col justify-between p-6 sm:p-8 lg:p-10 xl:p-12 border-r border-slate-100 z-10 bg-white">
+        {/* Top Branding Header */}
+        <div className="flex items-center gap-3">
+          <LogoImage size={38} className="rounded-xl shadow-xs" />
+          <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-xl font-bold text-slate-900 tracking-tight">SIPUS</h1>
-              <span className="text-[10px] font-bold tracking-wider px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 uppercase border border-indigo-200/60">
-                Portal Petugas
+              <span className="font-extrabold text-lg text-slate-900 tracking-tight leading-none">
+                SIPUS
+              </span>
+              <span className="text-[10px] font-bold tracking-wider px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 uppercase border border-indigo-200/60 leading-none">
+                Staff Portal
               </span>
             </div>
-            <p className="text-xs text-slate-500 mt-1.5">
+            <p className="text-xs text-slate-500 font-medium mt-1">
               Sistem Informasi Perpustakaan Sekolah
+            </p>
+          </div>
+        </div>
+
+        {/* Center Section: Form */}
+        <div className="my-10 lg:my-0 max-w-md w-full mx-auto">
+          <div className="mb-7">
+            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+              Selamat Datang
+            </h1>
+            <p className="text-sm text-slate-500 mt-2 leading-relaxed">
+              Silakan masuk menggunakan akun petugas piket untuk mengelola sirkulasi dan katalog buku.
             </p>
           </div>
 
@@ -90,7 +103,7 @@ function Login() {
                   placeholder="Contoh: PTG-2024001"
                   required
                   autoComplete="username"
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white focus:bg-white text-slate-900 text-sm pl-10 pr-3.5 py-2.5 transition-all duration-150 focus:border-indigo-600 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 placeholder:text-slate-400 shadow-2xs"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50/60 hover:bg-white focus:bg-white text-slate-900 text-sm pl-10 pr-3.5 py-2.5 transition-all duration-150 focus:border-indigo-600 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 placeholder:text-slate-400 shadow-2xs"
                 />
               </div>
             </div>
@@ -111,7 +124,7 @@ function Login() {
                   placeholder="••••••••"
                   required
                   autoComplete="current-password"
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white focus:bg-white text-slate-900 text-sm pl-10 pr-10 py-2.5 transition-all duration-150 focus:border-indigo-600 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 placeholder:text-slate-400 shadow-2xs"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50/60 hover:bg-white focus:bg-white text-slate-900 text-sm pl-10 pr-10 py-2.5 transition-all duration-150 focus:border-indigo-600 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 placeholder:text-slate-400 shadow-2xs"
                 />
                 <button
                   type="button"
@@ -137,17 +150,61 @@ function Login() {
                     <span>Memverifikasi...</span>
                   </>
                 ) : (
-                  <span>Masuk Dashboard Petugas</span>
+                  <span>Masuk ke Dashboard</span>
                 )}
               </button>
             </div>
           </form>
 
-          {/* Footer note */}
-          <div className="mt-6 pt-5 border-t border-slate-100 text-center">
-            <p className="text-[11px] text-slate-400">
-              Sistem Informasi Perpustakaan Sekolah (SIPUS) • Hanya untuk staf berwenang
-            </p>
+          {/* Security Info */}
+          <div className="mt-6 p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-2.5 text-xs text-slate-500">
+            <ShieldCheck size={16} className="text-emerald-600 shrink-0" />
+            <span>Akses terproteksi khusus staf perpustakaan berwenang.</span>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="pt-6 border-t border-slate-100 text-xs text-slate-400">
+          © 2026 SIPUS • Sistem Informasi Perpustakaan Sekolah
+        </div>
+      </div>
+
+      {/* Kolom Kanan: Visual Hero Panel Luas (Gedung Sekolah & Suasana Kampus) */}
+      <div className="hidden lg:relative lg:flex lg:flex-1 bg-slate-950 overflow-hidden">
+        <img
+          src={loginBg}
+          alt="Gedung Sekolah"
+          className="absolute inset-0 w-full h-full object-cover object-center scale-102"
+        />
+        {/* Deep Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/25 to-indigo-950/30" />
+
+        {/* Hero Overlay Content */}
+        <div className="relative z-10 mt-auto p-12 lg:p-16 xl:p-20 text-white max-w-2xl">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs font-medium text-white mb-4">
+            <BookOpen size={13} className="text-indigo-300" />
+            <span>Pusat Sumber Belajar & Literasi</span>
+          </div>
+
+          <h2 className="text-2xl xl:text-3xl font-bold tracking-tight leading-snug text-white">
+            "Membuka Gerbang Pengetahuan, Membangun Generasi Gemilang."
+          </h2>
+
+          <p className="mt-3 text-sm text-slate-200/90 leading-relaxed font-normal">
+            Platform terpadu untuk sirkulasi buku, verifikasi peminjaman daring, dan inventarisasi perpustakaan sekolah.
+          </p>
+
+          {/* Feature Badges */}
+          <div className="mt-6 flex flex-wrap gap-2 text-xs text-slate-200">
+            <span className="px-3 py-1 rounded-lg bg-black/40 backdrop-blur-sm border border-white/10">
+              ✓ Sirkulasi Cepat
+            </span>
+            <span className="px-3 py-1 rounded-lg bg-black/40 backdrop-blur-sm border border-white/10">
+              ✓ Katalog Terintegrasi
+            </span>
+            <span className="px-3 py-1 rounded-lg bg-black/40 backdrop-blur-sm border border-white/10">
+              ✓ Pelacakan Keterlambatan
+            </span>
           </div>
         </div>
       </div>
