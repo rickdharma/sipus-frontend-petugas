@@ -155,9 +155,30 @@ function Layout() {
         </div>
       </aside>
 
-      <main className="flex-1 min-w-0 p-6">
-        <Outlet />
-      </main>
+      <div className="flex-1 min-w-0 flex flex-col min-h-screen">
+        <main className="flex-1 p-6 md:p-8">
+          <Outlet />
+        </main>
+
+        <footer className="mt-auto px-6 py-4 border-t border-slate-200/80 bg-white/80 backdrop-blur-xs text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-2">
+          <div className="flex items-center gap-2 text-center sm:text-left flex-wrap justify-center sm:justify-start">
+            <span className="font-semibold text-slate-800">SIPUS</span>
+            <span className="text-slate-300">•</span>
+            <span>Sistem Informasi Perpustakaan Sekolah</span>
+            <span className="text-slate-300 hidden md:inline">•</span>
+            <span className="text-slate-400 hidden md:inline">Portal Petugas Piket</span>
+          </div>
+
+          <div className="flex items-center gap-3 text-[11px] text-slate-400">
+            <span className="inline-flex items-center gap-1.5 text-emerald-600 font-medium">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              Sistem Aktif
+            </span>
+            <span className="text-slate-300">•</span>
+            <span>v1.0.0</span>
+          </div>
+        </footer>
+      </div>
     </div>
   );
 }
