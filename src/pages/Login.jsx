@@ -173,7 +173,7 @@ function Login() {
       <div className="hidden lg:relative lg:flex lg:flex-1 bg-slate-950 overflow-hidden">
         <img
           src={loginBg}
-          alt="Gedung Sekolah"
+          alt="Gedung SMKS TI ANNISA 2"
           className="absolute inset-0 w-full h-full object-cover object-center scale-102"
         />
         {/* Deep Gradient Overlay */}
