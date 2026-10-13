@@ -164,62 +164,183 @@ function KelolaBuku() {
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={editingId ? "Edit Buku" : "Tambah Buku Baru"}
+        title={editingId ? "Edit Informasi Buku" : "Tambah Buku Baru"}
+        subtitle={
+          editingId
+            ? "Perbarui metadata atau stok buku yang terdaftar."
+            : "Lengkapi data buku untuk didaftarkan ke sistem perpustakaan."
+        }
+        maxWidth="max-w-2xl"
       >
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           {formError && (
-            <p className="text-danger text-sm bg-red-50 p-2 rounded whitespace-pre-line">{formError}</p>
+            <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200/80 flex items-start gap-2.5 text-xs text-rose-800">
+              <span className="font-bold text-rose-600">✕</span>
+              <p className="leading-relaxed whitespace-pre-line font-medium">{formError}</p>
+            </div>
           )}
 
-          {fields.map((f) => (
-            <div key={f.name}>
-              <label className="block text-sm font-medium mb-1">{f.label}</label>
+          {/* Judul Buku */}
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1.5 tracking-tight">
+              Judul Buku <span className="text-rose-500">*</span>
+            </label>
+            <input
+              name="title"
+              type="text"
+              value={form.title}
+              onChange={handleChange}
+              placeholder="Contoh: Laskar Pelangi"
+              required
+              className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 shadow-2xs transition-all duration-150 hover:border-slate-300 focus:border-indigo-600 focus:outline-none focus:ring-4 focus:ring-indigo-500/10"
+            />
+          </div>
+
+          {/* Penulis & Penerbit (2 kolom) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5 tracking-tight">
+                Penulis <span className="text-rose-500">*</span>
+              </label>
               <input
-                name={f.name}
-                type={f.type}
-                min={f.type === "number" ? 0 : undefined}
-                value={form[f.name]}
+                name="author"
+                type="text"
+                value={form.author}
                 onChange={handleChange}
+                placeholder="Nama penulis"
                 required
-                className="border rounded-lg p-2 w-full"
+                className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 shadow-2xs transition-all duration-150 hover:border-slate-300 focus:border-indigo-600 focus:outline-none focus:ring-4 focus:ring-indigo-500/10"
               />
             </div>
-          ))}
 
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5 tracking-tight">
+                Penerbit <span className="text-rose-500">*</span>
+              </label>
+              <input
+                name="publisher"
+                type="text"
+                value={form.publisher}
+                onChange={handleChange}
+                placeholder="Nama penerbit"
+                required
+                className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 shadow-2xs transition-all duration-150 hover:border-slate-300 focus:border-indigo-600 focus:outline-none focus:ring-4 focus:ring-indigo-500/10"
+              />
+            </div>
+          </div>
+
+          {/* Tahun, ISBN, Stok (3 kolom) */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5 tracking-tight">
+                Tahun Terbit <span className="text-rose-500">*</span>
+              </label>
+              <input
+                name="publication_year"
+                type="number"
+                min={1800}
+                max={2100}
+                value={form.publication_year}
+                onChange={handleChange}
+                placeholder="Contoh: 2023"
+                required
+                className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 shadow-2xs transition-all duration-150 hover:border-slate-300 focus:border-indigo-600 focus:outline-none focus:ring-4 focus:ring-indigo-500/10"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5 tracking-tight">
+                ISBN <span className="text-rose-500">*</span>
+              </label>
+              <input
+                name="isbn"
+                type="text"
+                value={form.isbn}
+                onChange={handleChange}
+                placeholder="978-xxx-xxx"
+                required
+                className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm font-mono text-slate-800 placeholder:text-slate-400 shadow-2xs transition-all duration-150 hover:border-slate-300 focus:border-indigo-600 focus:outline-none focus:ring-4 focus:ring-indigo-500/10"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5 tracking-tight">
+                Jumlah Stok <span className="text-rose-500">*</span>
+              </label>
+              <input
+                name="stock"
+                type="number"
+                min={0}
+                value={form.stock}
+                onChange={handleChange}
+                placeholder="0"
+                required
+                className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm font-semibold text-slate-800 placeholder:text-slate-400 shadow-2xs transition-all duration-150 hover:border-slate-300 focus:border-indigo-600 focus:outline-none focus:ring-4 focus:ring-indigo-500/10"
+              />
+            </div>
+          </div>
+
+          {/* Deskripsi */}
           <div>
-            <label className="block text-sm font-medium mb-1">Deskripsi (opsional)</label>
+            <label className="block text-xs font-semibold text-slate-700 mb-1.5 tracking-tight">
+              Sinopsis / Deskripsi Buku <span className="text-slate-400 font-normal">(opsional)</span>
+            </label>
             <textarea
               name="description"
               value={form.description}
               onChange={handleChange}
               rows={3}
-              className="border rounded-lg p-2 w-full"
+              placeholder="Tuliskan ringkasan isi buku atau catatan kondisi buku..."
+              className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 shadow-2xs transition-all duration-150 hover:border-slate-300 focus:border-indigo-600 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 resize-y"
             />
           </div>
 
+          {/* Upload Cover */}
           <div>
-            <label className="block text-sm font-medium mb-1">Cover (opsional, JPG/PNG/WEBP maks 2MB)</label>
-            <input
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              onChange={(e) => setCoverFile(e.target.files[0] ?? null)}
-              className="text-sm w-full"
-            />
-            {editingId && (
-              <p className="text-xs text-slate-500 mt-1">Kosongkan jika tidak ingin mengganti cover.</p>
-            )}
+            <label className="block text-xs font-semibold text-slate-700 mb-1.5 tracking-tight">
+              Cover Buku <span className="text-slate-400 font-normal">(opsional, format JPG/PNG/WEBP maks 2MB)</span>
+            </label>
+            <div className="flex items-center gap-3 p-3 rounded-xl border border-dashed border-slate-300 hover:border-indigo-400 bg-slate-50/50 hover:bg-indigo-50/20 transition-all">
+              <label className="cursor-pointer px-3.5 py-2 rounded-lg bg-white border border-slate-200 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 transition-all shrink-0">
+                Pilih File Gambar
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={(e) => setCoverFile(e.target.files[0] ?? null)}
+                  className="hidden"
+                />
+              </label>
+              <span className="text-xs text-slate-500 truncate flex-1">
+                {coverFile ? coverFile.name : editingId ? "Sudah ada cover (pilih untuk ganti)" : "Belum ada file terpilih"}
+              </span>
+              {coverFile && (
+                <button
+                  type="button"
+                  onClick={() => setCoverFile(null)}
+                  className="text-xs text-rose-500 hover:text-rose-700 font-semibold cursor-pointer px-1.5 py-0.5 rounded"
+                  title="Batalkan pilihan cover"
+                >
+                  Batal
+                </button>
+              )}
+            </div>
           </div>
 
-          <div className="flex justify-end gap-2 mt-2">
-            <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 rounded-lg border">
+          {/* Form Actions */}
+          <div className="flex justify-end items-center gap-2.5 pt-4 mt-2 border-t border-slate-100">
+            <button
+              type="button"
+              onClick={() => setIsModalOpen(false)}
+              className="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:border-slate-300 shadow-2xs transition-all cursor-pointer"
+            >
               Batal
             </button>
             <button
               type="submit"
               disabled={saving}
-              className="px-4 py-2 rounded-lg bg-primary hover:bg-primary-hover text-white disabled:opacity-50"
+              className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white text-xs font-semibold shadow-xs hover:shadow-md transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {saving ? "Menyimpan..." : "Simpan"}
+              {saving ? "Menyimpan Data..." : editingId ? "Simpan Perubahan" : "Simpan Buku"}
             </button>
           </div>
         </form>

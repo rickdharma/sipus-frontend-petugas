@@ -82,14 +82,20 @@ function Pengembalian() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="bg-white rounded-xl shadow-sm p-4">
-        <h2 className="font-bold">Pencatatan Pengembalian Buku</h2>
-        <p className="text-sm text-slate-500">
-          Daftar buku yang sedang dipinjam. Catat pengembalian saat buku sudah diterima kembali.
+      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-5">
+        <h2 className="text-base font-bold text-slate-900 tracking-tight">Pencatatan Pengembalian Buku</h2>
+        <p className="text-xs text-slate-500 mt-0.5">
+          Daftar buku yang sedang dipinjam oleh siswa, guru, atau tamu. Catat pengembalian saat buku fisik telah diterima kembali di meja sirkulasi.
         </p>
       </div>
 
-      <DataTable columns={columns} table={table} emptyText="Tidak ada buku yang sedang dipinjam saat ini." />
+      <DataTable
+        columns={columns}
+        table={table}
+        searchable
+        searchPlaceholder="Cari kode transaksi, nama peminjam..."
+        emptyText="Tidak ada buku yang sedang dipinjam saat ini."
+      />
     </div>
   );
 }

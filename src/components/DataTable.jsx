@@ -82,68 +82,90 @@ function DataTable({
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-sm">
-      <div className="p-4 flex flex-col sm:flex-row gap-3 justify-between sm:items-center border-b border-slate-100">
+    <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+      <div className="p-4 flex flex-col sm:flex-row gap-3 justify-between sm:items-center border-b border-slate-100 bg-slate-50/40">
         {searchable ? (
-          <div className="relative sm:w-72">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <div className="relative sm:w-80">
+            <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
             <input
+              type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder={searchPlaceholder}
-              className="border rounded-lg py-2 pl-9 pr-3 w-full text-sm"
+              className="w-full rounded-xl border border-slate-200 bg-white pl-9.5 pr-8 py-2 text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 shadow-2xs transition-all duration-150 hover:border-slate-300 focus:border-indigo-600 focus:outline-none focus:ring-4 focus:ring-indigo-500/10"
             />
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch("")}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 rounded-full hover:bg-slate-100 transition-colors cursor-pointer"
+                title="Hapus pencarian"
+              >
+                ✕
+              </button>
+            )}
           </div>
         ) : (
           <span />
         )}
 
-        <label className="flex items-center gap-2 text-sm text-slate-500">
-          Tampilkan
-          <select
-            value={perPage}
-            onChange={(e) => setPerPage(Number(e.target.value))}
-            className="border rounded-lg p-1.5"
-          >
-            {PER_PAGE_OPTIONS.map((n) => (
-              <option key={n} value={n}>
-                {n}
-              </option>
-            ))}
-          </select>
-          data
+        <label className="flex items-center gap-2 text-xs sm:text-sm text-slate-600 font-medium">
+          <span>Tampilkan</span>
+          <div className="relative">
+            <select
+              value={perPage}
+              onChange={(e) => setPerPage(Number(e.target.value))}
+              className="appearance-none rounded-xl border border-slate-200 bg-white pl-3 pr-7 py-1.5 text-xs sm:text-sm font-semibold text-slate-700 shadow-2xs transition-all duration-150 hover:border-slate-300 focus:border-indigo-600 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 cursor-pointer"
+            >
+              {PER_PAGE_OPTIONS.map((n) => (
+                <option key={n} value={n}>
+                  {n}
+                </option>
+              ))}
+            </select>
+            <div className="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none text-slate-400">
+              <span className="text-[10px]">▼</span>
+            </div>
+          </div>
+          <span>baris</span>
         </label>
       </div>
 
       {body}
 
       {!error && rows.length > 0 && (
-        <div className="p-4 border-t border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-3 text-sm">
+        <div className="p-4 border-t border-slate-100 bg-slate-50/40 flex flex-col sm:flex-row justify-between items-center gap-3 text-xs sm:text-sm">
           <p className="text-slate-500">
-            Menampilkan {from}-{to} dari {total} data
+            Menampilkan <span className="font-semibold text-slate-700">{from}-{to}</span> dari{" "}
+            <span className="font-semibold text-slate-700">{total}</span> data
           </p>
 
           {lastPage > 1 && (
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1.5">
               <button
+                type="button"
                 onClick={() => setPage(currentPage - 1)}
                 disabled={currentPage <= 1}
-                className="p-2 rounded-lg border hover:bg-slate-50 disabled:opacity-40"
+                className="p-2 rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:border-slate-300 disabled:opacity-40 disabled:cursor-not-allowed shadow-2xs transition-all"
+                title="Halaman sebelumnya"
               >
-                <ChevronLeft size={14} />
+                <ChevronLeft size={15} />
               </button>
 
               {getPageItems(currentPage, lastPage).map((item, i) =>
                 item === "..." ? (
-                  <span key={`gap-${i}`} className="px-2 text-slate-400">
-                    ...
+                  <span key={`gap-${i}`} className="px-1.5 text-slate-400 text-xs font-mono">
+                    …
                   </span>
                 ) : (
                   <button
+                    type="button"
                     key={item}
                     onClick={() => setPage(item)}
-                    className={`min-w-8 px-2 py-1.5 rounded-lg border ${
-                      item === currentPage ? "bg-primary text-white border-primary" : "hover:bg-slate-50"
+                    className={`min-w-8 h-8 px-2.5 rounded-xl text-xs font-semibold transition-all shadow-2xs ${
+                      item === currentPage
+                        ? "bg-indigo-600 text-white border border-indigo-600 shadow-indigo-600/20"
+                        : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300"
                     }`}
                   >
                     {item}
@@ -152,11 +174,13 @@ function DataTable({
               )}
 
               <button
+                type="button"
                 onClick={() => setPage(currentPage + 1)}
                 disabled={currentPage >= lastPage}
-                className="p-2 rounded-lg border hover:bg-slate-50 disabled:opacity-40"
+                className="p-2 rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:border-slate-300 disabled:opacity-40 disabled:cursor-not-allowed shadow-2xs transition-all"
+                title="Halaman berikutnya"
               >
-                <ChevronRight size={14} />
+                <ChevronRight size={15} />
               </button>
             </div>
           )}

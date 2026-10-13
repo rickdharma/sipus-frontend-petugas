@@ -1,5 +1,19 @@
 import { useEffect, useState } from "react";
-import { Plus, Trash2 } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  User,
+  CreditCard,
+  Phone,
+  Calendar,
+  BookOpen,
+  AlertCircle,
+  CheckCircle2,
+  ChevronDown,
+  Loader2,
+  Clock,
+  Sparkles,
+} from "lucide-react";
 import api from "../services/api";
 import { getErrorMessage } from "../utils/getErrorMessage";
 import { formatDate, toDateInputValue } from "../utils/format";
@@ -11,7 +25,7 @@ const borrowerTypes = [
   { value: "staff", label: "Staf" },
 ];
 
-// Aturan dari dokumentasi API: guru maks 7 hari, selain itu maks 3 hari
+// Aturan dari dokumentasi API: guru & staf maks 7 hari, selain itu maks 3 hari
 function maxDays(type) {
   return type === "teacher" || type === "staff" ? 7 : 3;
 }
@@ -97,7 +111,7 @@ function PeminjamanLangsung() {
 
     const chosen = items.filter((item) => item.book_id);
     if (chosen.length === 0) {
-      setFormError("Pilih minimal satu buku");
+      setFormError("Pilih minimal satu buku untuk dipinjam");
       return;
     }
 
@@ -110,7 +124,7 @@ function PeminjamanLangsung() {
         quantity: Number(item.quantity),
       })),
     };
-    // Field opsional hanya dikirim kalau diisi
+
     if (form.borrower_phone.trim()) payload.borrower_phone = form.borrower_phone.trim();
     if (form.borrower_identity_number.trim())
       payload.borrower_identity_number = form.borrower_identity_number.trim();
@@ -122,7 +136,7 @@ function PeminjamanLangsung() {
       setSuccess(res.data.data);
       setForm(initialForm());
       setItems([{ ...emptyItem }]);
-      await fetchBooks(); // stok sudah berubah
+      await fetchBooks();
     } catch (err) {
       setFormError(getErrorMessage(err, "Gagal mencatat peminjaman"));
     } finally {
@@ -130,118 +144,248 @@ function PeminjamanLangsung() {
     }
   }
 
-  if (loadingBooks) return <p>Memuat data...</p>;
-  if (booksError) return <p className="text-danger">{booksError}</p>;
+  if (loadingBooks) {
+    return (
+      <div className="bg-white rounded-2xl border border-slate-200/80 p-8 text-center text-slate-500 text-sm">
+        <Loader2 size={24} className="animate-spin mx-auto text-indigo-600 mb-2" />
+        Memuat daftar katalog buku...
+      </div>
+    );
+  }
 
-  const inputClass = "border rounded-lg p-2 w-full";
+  if (booksError) {
+    return (
+      <div className="bg-white rounded-2xl border border-rose-200 p-6 text-sm text-rose-700 flex items-center gap-2">
+        <AlertCircle size={18} />
+        {booksError}
+      </div>
+    );
+  }
 
   return (
-    <div>
-      <div className="bg-white rounded-xl shadow-sm p-4 mb-4">
-        <h2 className="font-bold">Peminjaman Langsung di Tempat</h2>
-        <p className="text-sm text-slate-500">
-          Catat peminjaman untuk siswa, guru, staf, atau tamu yang datang langsung. Status
-          langsung dipinjam dan stok langsung berkurang.
+    <div className="flex flex-col gap-5 max-w-4xl">
+      {/* Header Banner */}
+      <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs">
+        <h2 className="text-base font-bold text-slate-900 tracking-tight">Peminjaman Langsung di Tempat</h2>
+        <p className="text-xs text-slate-500 mt-1">
+          Catat transaksi peminjaman fisik untuk siswa, guru, staf, atau tamu umum yang datang langsung ke meja sirkulasi.
         </p>
       </div>
 
+      {/* Success Notification */}
       {success && (
-        <div className="bg-green-50 border border-green-200 text-green-800 rounded-xl p-4 mb-4 text-sm">
-          Peminjaman <span className="font-semibold">#{success.id}</span> atas nama{" "}
-          <span className="font-semibold">{success.borrower_name}</span> berhasil dicatat. Batas
-          pengembalian: {formatDate(success.due_date)}.
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm p-5 flex flex-col gap-4">
-        {formError && (
-          <p className="text-danger text-sm bg-red-50 p-3 rounded-lg whitespace-pre-line">
-            {formError}
-          </p>
-        )}
-
-        <div>
-          <label className="block text-sm font-medium mb-1">Nama Peminjam</label>
-          <input name="borrower_name" value={form.borrower_name} onChange={handleChange} required className={inputClass} />
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Tipe Peminjam</label>
-            <select value={form.borrower_type} onChange={handleTypeChange} className={inputClass}>
-              {borrowerTypes.map((t) => (
-                <option key={t.value} value={t.value}>
-                  {t.label}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">NIS / NIP / KTP (opsional)</label>
-            <input name="borrower_identity_number" value={form.borrower_identity_number} onChange={handleChange} className={inputClass} />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">No. Telepon (opsional)</label>
-            <input name="borrower_phone" value={form.borrower_phone} onChange={handleChange} className={inputClass} />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Batas Pengembalian</label>
-            <input
-              type="date"
-              name="due_date"
-              value={form.due_date}
-              onChange={handleChange}
-              min={toDateInputValue(new Date())}
-              max={toDateInputValue(addDays(maxDays(form.borrower_type)))}
-              required
-              className={inputClass}
-            />
-            <p className="text-xs text-slate-500 mt-1">
-              Maksimal {maxDays(form.borrower_type)} hari untuk tipe ini.
+        <div className="bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-2xl p-4 text-xs sm:text-sm flex items-start gap-3 shadow-2xs">
+          <CheckCircle2 size={18} className="text-emerald-600 shrink-0 mt-0.5" />
+          <div className="leading-relaxed">
+            <span className="font-bold">Transaksi Berhasil Dicatat!</span>
+            <p className="mt-0.5 text-emerald-800">
+              Peminjaman <span className="font-mono font-bold text-emerald-950">#{success.id}</span> atas nama{" "}
+              <span className="font-semibold text-emerald-950">{success.borrower_name}</span> telah aktif. Batas pengembalian:{" "}
+              <span className="font-semibold text-emerald-950">{formatDate(success.due_date)}</span>.
             </p>
           </div>
         </div>
+      )}
 
+      {/* Main Form */}
+      <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-6 flex flex-col gap-6">
+        {formError && (
+          <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200/80 flex items-start gap-2.5 text-xs text-rose-800">
+            <AlertCircle size={16} className="text-rose-600 shrink-0 mt-0.5" />
+            <p className="leading-relaxed whitespace-pre-line font-medium">{formError}</p>
+          </div>
+        )}
+
+        {/* SECTION 1: IDENTITAS PEMINJAM */}
         <div>
-          <label className="block text-sm font-medium mb-2">Buku yang Dipinjam</label>
-          <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-2 pb-2.5 mb-4 border-b border-slate-100">
+            <div className="w-6 h-6 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-xs font-bold">
+              1
+            </div>
+            <h3 className="text-sm font-bold text-slate-800 tracking-tight">Identitas Peminjam</h3>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Nama Peminjam */}
+            <div className="sm:col-span-2">
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5 tracking-tight">
+                Nama Lengkap Peminjam <span className="text-rose-500">*</span>
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                  <User size={15} />
+                </div>
+                <input
+                  name="borrower_name"
+                  value={form.borrower_name}
+                  onChange={handleChange}
+                  placeholder="Contoh: Ahmad Dahlan"
+                  required
+                  className="w-full rounded-xl border border-slate-200 bg-white pl-9.5 pr-3.5 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 shadow-2xs transition-all duration-150 hover:border-slate-300 focus:border-indigo-600 focus:outline-none focus:ring-4 focus:ring-indigo-500/10"
+                />
+              </div>
+            </div>
+
+            {/* Tipe Peminjam */}
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5 tracking-tight">
+                Tipe Peminjam <span className="text-rose-500">*</span>
+              </label>
+              <div className="relative">
+                <select
+                  value={form.borrower_type}
+                  onChange={handleTypeChange}
+                  className="w-full appearance-none rounded-xl border border-slate-200 bg-white pl-3.5 pr-10 py-2.5 text-sm text-slate-800 shadow-2xs transition-all duration-150 hover:border-slate-300 focus:border-indigo-600 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 cursor-pointer"
+                >
+                  {borrowerTypes.map((t) => (
+                    <option key={t.value} value={t.value}>
+                      {t.label}
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-slate-400">
+                  <ChevronDown size={16} />
+                </div>
+              </div>
+            </div>
+
+            {/* Nomor Identitas */}
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5 tracking-tight">
+                NIS / NIP / No. Identitas <span className="text-slate-400 font-normal">(opsional)</span>
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                  <CreditCard size={15} />
+                </div>
+                <input
+                  name="borrower_identity_number"
+                  value={form.borrower_identity_number}
+                  onChange={handleChange}
+                  placeholder="Nomor kartu siswa / NIP / KTP"
+                  className="w-full rounded-xl border border-slate-200 bg-white pl-9.5 pr-3.5 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 shadow-2xs transition-all duration-150 hover:border-slate-300 focus:border-indigo-600 focus:outline-none focus:ring-4 focus:ring-indigo-500/10"
+                />
+              </div>
+            </div>
+
+            {/* Nomor Telepon */}
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5 tracking-tight">
+                No. Telepon / WhatsApp <span className="text-slate-400 font-normal">(opsional)</span>
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                  <Phone size={15} />
+                </div>
+                <input
+                  name="borrower_phone"
+                  value={form.borrower_phone}
+                  onChange={handleChange}
+                  placeholder="0812xxxxxxxx"
+                  className="w-full rounded-xl border border-slate-200 bg-white pl-9.5 pr-3.5 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 shadow-2xs transition-all duration-150 hover:border-slate-300 focus:border-indigo-600 focus:outline-none focus:ring-4 focus:ring-indigo-500/10"
+                />
+              </div>
+            </div>
+
+            {/* Batas Pengembalian */}
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5 tracking-tight">
+                Batas Pengembalian <span className="text-rose-500">*</span>
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                  <Calendar size={15} />
+                </div>
+                <input
+                  type="date"
+                  name="due_date"
+                  value={form.due_date}
+                  onChange={handleChange}
+                  min={toDateInputValue(new Date())}
+                  max={toDateInputValue(addDays(maxDays(form.borrower_type)))}
+                  required
+                  className="w-full rounded-xl border border-slate-200 bg-white pl-9.5 pr-3.5 py-2.5 text-sm text-slate-800 shadow-2xs transition-all duration-150 hover:border-slate-300 focus:border-indigo-600 focus:outline-none focus:ring-4 focus:ring-indigo-500/10"
+                />
+              </div>
+              <p className="text-[11px] text-slate-500 mt-1 flex items-center gap-1">
+                <Clock size={12} className="text-slate-400" />
+                Maksimal durasi: <strong className="text-slate-700">{maxDays(form.borrower_type)} hari</strong> untuk tipe {borrowerTypes.find((t) => t.value === form.borrower_type)?.label}.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* SECTION 2: BUKU YANG DIPINJAM */}
+        <div>
+          <div className="flex items-center justify-between pb-2.5 mb-4 border-b border-slate-100">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-xs font-bold">
+                2
+              </div>
+              <h3 className="text-sm font-bold text-slate-800 tracking-tight">Daftar Buku yang Dipinjam</h3>
+            </div>
+            <span className="text-xs font-medium text-slate-500">
+              Total {items.filter((i) => i.book_id).length} judul dipilih
+            </span>
+          </div>
+
+          <div className="space-y-3">
             {items.map((item, index) => {
               const selected = books.find((b) => b.id === Number(item.book_id));
               return (
-                <div key={index} className="flex gap-2 items-center">
-                  <select
-                    value={item.book_id}
-                    onChange={(e) => updateItem(index, { book_id: e.target.value, quantity: 1 })}
-                    className="border rounded-lg p-2 flex-1 min-w-0"
-                  >
-                    <option value="">-- Pilih buku --</option>
-                    {optionsFor(index).map((b) => (
-                      <option key={b.id} value={b.id}>
-                        {b.title} (sisa {b.stock})
-                      </option>
-                    ))}
-                  </select>
-                  <input
-                    type="number"
-                    min={1}
-                    max={selected?.stock ?? 1}
-                    value={item.quantity}
-                    onChange={(e) => updateItem(index, { quantity: e.target.value })}
-                    className="border rounded-lg p-2 w-20"
-                  />
-                  {items.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => removeItem(index)}
-                      title="Hapus baris"
-                      className="p-2 rounded-lg bg-red-50 text-danger hover:bg-red-100"
+                <div
+                  key={index}
+                  className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/40 hover:bg-white hover:border-slate-300 transition-all flex flex-col sm:flex-row items-stretch sm:items-center gap-3"
+                >
+                  {/* Selector Buku */}
+                  <div className="relative flex-1 min-w-0">
+                    <select
+                      value={item.book_id}
+                      onChange={(e) => updateItem(index, { book_id: e.target.value, quantity: 1 })}
+                      className="w-full appearance-none rounded-xl border border-slate-200 bg-white pl-3.5 pr-10 py-2.5 text-sm text-slate-800 shadow-2xs transition-all hover:border-slate-300 focus:border-indigo-600 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 cursor-pointer"
                     >
-                      <Trash2 size={14} />
-                    </button>
-                  )}
+                      <option value="">-- Pilih Buku dari Katalog --</option>
+                      {optionsFor(index).map((b) => (
+                        <option key={b.id} value={b.id}>
+                          {b.title} — {b.author} (Sisa stok: {b.stock})
+                        </option>
+                      ))}
+                    </select>
+                    <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-slate-400">
+                      <ChevronDown size={16} />
+                    </div>
+                  </div>
+
+                  {/* Quantity Input */}
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-xs font-semibold text-slate-500 whitespace-nowrap">Qty:</span>
+                    <input
+                      type="number"
+                      min={1}
+                      max={selected?.stock ?? 1}
+                      value={item.quantity}
+                      onChange={(e) => updateItem(index, { quantity: e.target.value })}
+                      className="w-20 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-center text-slate-800 shadow-2xs transition-all hover:border-slate-300 focus:border-indigo-600 focus:outline-none focus:ring-4 focus:ring-indigo-500/10"
+                    />
+
+                    {selected && (
+                      <span className="text-xs text-slate-400 font-mono">
+                        / maks {selected.stock}
+                      </span>
+                    )}
+
+                    {/* Tombol Hapus Baris */}
+                    {items.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeItem(index)}
+                        className="p-2 rounded-xl text-rose-500 hover:text-rose-700 hover:bg-rose-50 transition-colors ml-1 cursor-pointer"
+                        title="Hapus baris buku ini"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    )}
+                  </div>
                 </div>
               );
             })}
@@ -251,28 +395,61 @@ function PeminjamanLangsung() {
             <button
               type="button"
               onClick={addItem}
-              className="mt-2 flex items-center gap-1 text-sm font-semibold text-primary hover:underline"
+              className="mt-3.5 w-full py-2.5 px-4 rounded-xl border border-dashed border-indigo-300 hover:border-indigo-500 bg-indigo-50/40 hover:bg-indigo-50 text-indigo-700 text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer"
             >
-              <Plus size={14} /> Tambah buku lain
+              <Plus size={15} />
+              <span>Tambah Judul Buku Lain</span>
             </button>
           )}
+
           {availableBooks.length === 0 && (
-            <p className="text-sm text-danger mt-2">Tidak ada buku dengan stok tersedia.</p>
+            <p className="text-xs text-rose-600 mt-2 font-medium">
+              Tidak ada buku dengan stok tersedia di perpustakaan saat ini.
+            </p>
           )}
         </div>
 
+        {/* SECTION 3: CATATAN TAMBAHAN */}
         <div>
-          <label className="block text-sm font-medium mb-1">Catatan (opsional)</label>
-          <textarea name="notes" value={form.notes} onChange={handleChange} rows={2} className={inputClass} />
+          <div className="flex items-center gap-2 pb-2.5 mb-4 border-b border-slate-100">
+            <div className="w-6 h-6 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-xs font-bold">
+              3
+            </div>
+            <h3 className="text-sm font-bold text-slate-800 tracking-tight">Catatan Tambahan</h3>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1.5 tracking-tight">
+              Keterangan / Kondisi Khusus <span className="text-slate-400 font-normal">(opsional)</span>
+            </label>
+            <textarea
+              name="notes"
+              value={form.notes}
+              onChange={handleChange}
+              rows={2}
+              placeholder="Contoh: Buku diserahkan langsung di meja 2, kondisi sampul sedikit terlipat..."
+              className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 shadow-2xs transition-all duration-150 hover:border-slate-300 focus:border-indigo-600 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 resize-y"
+            />
+          </div>
         </div>
 
-        <button
-          type="submit"
-          disabled={saving}
-          className="bg-primary hover:bg-primary-hover text-white py-2.5 rounded-lg font-semibold disabled:opacity-50"
-        >
-          {saving ? "Menyimpan..." : "Catat Peminjaman"}
-        </button>
+        {/* Submit Button */}
+        <div className="pt-3 border-t border-slate-100 flex justify-end">
+          <button
+            type="submit"
+            disabled={saving}
+            className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white text-xs sm:text-sm font-semibold shadow-xs hover:shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {saving ? (
+              <>
+                <Loader2 size={16} className="animate-spin" />
+                <span>Mencatat Transaksi...</span>
+              </>
+            ) : (
+              <span>Simpan & Terbitkan Peminjaman</span>
+            )}
+          </button>
+        </div>
       </form>
     </div>
   );
