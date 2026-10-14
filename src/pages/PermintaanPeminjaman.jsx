@@ -4,7 +4,7 @@ import api from "../services/api";
 import DataTable from "../components/DataTable";
 import Modal from "../components/Modal";
 import { usePaginatedData } from "../hooks/usePaginatedData";
-import { getErrorMessage } from "../utils/getErrorMessage";
+import { confirmAction, toastSuccess } from "../utils/alert";
 import { formatDate } from "../utils/format";
 
 const tabs = [
@@ -59,15 +59,22 @@ function PermintaanPeminjaman() {
     fetchCounts();
   }, [fetchCounts]);
 
-  async function runAction(b, action, body) {
-    setActingId(b.id);
-    try {
-      await api.post(`/staff/borrowings/${b.id}/${action}`, body);
-    } catch (err) {
-      alert(getErrorMessage(err, "Gagal memproses permintaan"));
-    }
+  async function refreshAfter(message) {
+    toastSuccess(message);
+    // Beri tahu Layout agar badge angka di menu ikut diperbarui
     window.dispatchEvent(new Event("borrowings-updated"));
     await Promise.all([table.refetch(), fetchCounts()]);
+  }
+
+  async function handleApprove(b) {
+    setActingId(b.id);
+    const { confirmed } = await confirmAction({
+      title: "Setujui pengajuan ini?",
+      text: `${kodeTransaksi(b)} atas nama ${b.borrower_name}. Buku akan disiapkan untuk diambil peminjam.`,
+      confirmText: "Ya, setujui",
+      action: () => api.post(`/staff/borrowings/${b.id}/approve`),
+    });
+    if (confirmed) await refreshAfter("Pengajuan disetujui");
     setActingId(null);
   }
 
@@ -80,19 +87,37 @@ function PermintaanPeminjaman() {
     e.preventDefault();
     if (!rejectTarget) return;
 
+    const target = rejectTarget;
+    const notes = rejectReason.trim();
+
     setSubmittingReject(true);
-    await runAction(
-      rejectTarget,
-      "reject",
-      rejectReason.trim() ? { notes: rejectReason.trim() } : undefined
-    );
+    const { confirmed } = await confirmAction({
+      title: "Tolak pengajuan ini?",
+      text: `${kodeTransaksi(target)} atas nama ${target.borrower_name} akan ditolak.`,
+      icon: "warning",
+      danger: true,
+      confirmText: "Ya, tolak",
+      action: () =>
+        api.post(`/staff/borrowings/${target.id}/reject`, notes ? { notes } : undefined),
+    });
+
+    if (confirmed) {
+      setRejectTarget(null);
+      await refreshAfter("Pengajuan ditolak");
+    }
     setSubmittingReject(false);
-    setRejectTarget(null);
   }
 
-  function handleBorrow(b) {
-    if (!window.confirm(`Konfirmasi buku untuk ${kodeTransaksi(b)} sudah diserahkan ke peminjam?`)) return;
-    runAction(b, "borrow");
+  async function handleBorrow(b) {
+    setActingId(b.id);
+    const { confirmed } = await confirmAction({
+      title: "Konfirmasi pengambilan buku?",
+      text: `Pastikan buku untuk ${kodeTransaksi(b)} sudah diserahkan ke ${b.borrower_name}. Stok akan berkurang.`,
+      confirmText: "Ya, sudah diserahkan",
+      action: () => api.post(`/staff/borrowings/${b.id}/borrow`),
+    });
+    if (confirmed) await refreshAfter("Buku berhasil diserahkan");
+    setActingId(null);
   }
 
   const columns = [
@@ -157,7 +182,7 @@ function PermintaanPeminjaman() {
               <button
                 type="button"
                 disabled={actingId === b.id}
-                onClick={() => runAction(b, "approve")}
+                onClick={() => handleApprove(b)}
                 className="flex items-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-xl text-xs font-semibold shadow-2xs transition-all disabled:opacity-50 cursor-pointer"
               >
                 <Check size={14} /> Setujui

@@ -17,6 +17,7 @@ import {
 import api from "../services/api";
 import { getErrorMessage } from "../utils/getErrorMessage";
 import { formatDate, toDateInputValue } from "../utils/format";
+import { confirmAction, toastSuccess } from "../utils/alert";
 
 const borrowerTypes = [
   { value: "guest", label: "Tamu Umum" },
@@ -130,18 +131,24 @@ function PeminjamanLangsung() {
       payload.borrower_identity_number = form.borrower_identity_number.trim();
     if (form.notes.trim()) payload.notes = form.notes.trim();
 
+    const totalBuku = chosen.reduce((sum, item) => sum + Number(item.quantity), 0);
+
     setSaving(true);
-    try {
-      const res = await api.post("/staff/borrowings/direct", payload);
-      setSuccess(res.data.data);
+    const { confirmed, data } = await confirmAction({
+      title: "Catat peminjaman langsung?",
+      text: `${payload.borrower_name} meminjam ${totalBuku} buku dengan batas pengembalian ${formatDate(payload.due_date)}. Stok akan langsung berkurang.`,
+      confirmText: "Ya, catat",
+      action: () => api.post("/staff/borrowings/direct", payload).then((res) => res.data.data),
+    });
+
+    if (confirmed) {
+      setSuccess(data);
       setForm(initialForm());
       setItems([{ ...emptyItem }]);
-      await fetchBooks();
-    } catch (err) {
-      setFormError(getErrorMessage(err, "Gagal mencatat peminjaman"));
-    } finally {
-      setSaving(false);
+      toastSuccess("Peminjaman langsung berhasil dicatat");
+      await fetchBooks(); // stok sudah berubah
     }
+    setSaving(false);
   }
 
   if (loadingBooks) {

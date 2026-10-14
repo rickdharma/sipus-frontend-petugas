@@ -4,7 +4,7 @@ import api from "../services/api";
 import Modal from "../components/Modal";
 import DataTable from "../components/DataTable";
 import { usePaginatedData } from "../hooks/usePaginatedData";
-import { getErrorMessage } from "../utils/getErrorMessage";
+import { confirmAction, toastSuccess } from "../utils/alert";
 
 const emptyForm = {
   title: "",
@@ -63,7 +63,7 @@ function KelolaBuku() {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     setSaving(true);
     setFormError("");
@@ -71,31 +71,37 @@ function KelolaBuku() {
     const data = new FormData();
     Object.entries(form).forEach(([key, value]) => data.append(key, value));
     if (coverFile) data.append("cover", coverFile);
+    if (editingId) data.append("_method", "PUT");
 
-    let request;
-    if (editingId) {
-      data.append("_method", "PUT");
-      request = api.post(`/staff/books/${editingId}`, data);
-    } else {
-      request = api.post("/staff/books", data);
+    const { confirmed } = await confirmAction({
+      title: editingId ? "Simpan perubahan?" : "Tambah buku baru?",
+      text: form.title,
+      confirmText: "Ya, simpan",
+      action: () => api.post(editingId ? `/staff/books/${editingId}` : "/staff/books", data),
+    });
+
+    if (confirmed) {
+      setIsModalOpen(false);
+      table.refetch();
+      toastSuccess(editingId ? "Buku berhasil diperbarui" : "Buku berhasil ditambahkan");
     }
-
-    request
-      .then(() => {
-        setIsModalOpen(false);
-        table.refetch();
-      })
-      .catch((err) => setFormError(getErrorMessage(err, "Gagal menyimpan data buku")))
-      .finally(() => setSaving(false));
+    setSaving(false);
   }
 
-  function handleDelete(book) {
-    if (!window.confirm(`Yakin ingin menghapus "${book.title}"?`)) return;
+  async function handleDelete(book) {
+    const { confirmed } = await confirmAction({
+      title: "Hapus buku ini?",
+      text: `"${book.title}" akan dihapus dari daftar koleksi.`,
+      icon: "warning",
+      danger: true,
+      confirmText: "Ya, hapus",
+      action: () => api.delete(`/staff/books/${book.id}`),
+    });
 
-    api
-      .delete(`/staff/books/${book.id}`)
-      .then(() => table.refetch())
-      .catch((err) => alert(getErrorMessage(err, "Gagal menghapus buku")));
+    if (confirmed) {
+      table.refetch();
+      toastSuccess("Buku berhasil dihapus");
+    }
   }
 
   const columns = [

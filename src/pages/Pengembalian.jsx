@@ -5,7 +5,7 @@ import DataTable from "../components/DataTable";
 import StatusBadge from "../components/StatusBadge";
 import BorrowedItems from "../components/BorrowedItems";
 import { usePaginatedData } from "../hooks/usePaginatedData";
-import { getErrorMessage } from "../utils/getErrorMessage";
+import { confirmAction, toastSuccess } from "../utils/alert";
 import { formatDate, kodeTransaksi } from "../utils/format";
 
 function Pengembalian() {
@@ -15,16 +15,19 @@ function Pengembalian() {
   });
   const [actingId, setActingId] = useState(null);
 
-  async function handleReturn(b) {
-    if (!window.confirm(`Catat pengembalian ${kodeTransaksi(b)} (${b.borrower_name})?`)) return;
-
+    async function handleReturn(b) {
     setActingId(b.id);
-    try {
-      await api.post(`/staff/borrowings/${b.id}/return`);
-    } catch (err) {
-      alert(getErrorMessage(err, "Gagal mencatat pengembalian"));
+    const { confirmed } = await confirmAction({
+      title: "Catat pengembalian buku?",
+      text: `${kodeTransaksi(b)} atas nama ${b.borrower_name}. Stok buku akan bertambah kembali.`,
+      confirmText: "Ya, catat",
+      action: () => api.post(`/staff/borrowings/${b.id}/return`),
+    });
+
+    if (confirmed) {
+      toastSuccess("Pengembalian berhasil dicatat");
+      await table.refetch();
     }
-    await table.refetch();
     setActingId(null);
   }
 

@@ -1,9 +1,12 @@
 import axios from "axios";
+import { alertSessionExpired } from "../utils/alert";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
   headers: { Accept: "application/json" },
 });
+
+let sessionAlertShown = false;
 
 // Setiap request otomatis membawa token login
 api.interceptors.request.use((config) => {
@@ -14,7 +17,7 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Kalau token ditolak server (kedaluwarsa/tidak valid), paksa kembali ke login
+// Kalau token ditolak server (kedaluwarsa/tidak valid), beri tahu lalu arahkan ke login
 api.interceptors.response.use(
   (res) => res,
   (error) => {
@@ -22,7 +25,14 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && !isLoginPage) {
       localStorage.removeItem("petugas_token");
       localStorage.removeItem("petugas_user");
-      window.location.href = "/login";
+
+      // Beberapa request bisa gagal bersamaan; dialognya cukup muncul sekali
+      if (!sessionAlertShown) {
+        sessionAlertShown = true;
+        alertSessionExpired().then(() => {
+          window.location.href = "/login";
+        });
+      }
     }
     return Promise.reject(error);
   }

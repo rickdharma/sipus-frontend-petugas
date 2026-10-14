@@ -14,6 +14,7 @@ import {
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
 import { LogoImage } from "./Logo";
+import { confirmAction, toastSuccess } from "../utils/alert";
 
 const menu = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -47,6 +48,19 @@ function Layout() {
       localStorage.setItem(STORAGE_KEY, next ? "1" : "0");
     } catch {
       // gagal menyimpan pilihan tidak masalah, sidebar tetap berfungsi
+    }
+  }
+
+  async function handleLogout() {
+    const { confirmed } = await confirmAction({
+      title: "Keluar dari aplikasi?",
+      text: "Sesi login kamu akan diakhiri.",
+      confirmText: "Ya, keluar",
+    });
+
+    if (confirmed) {
+      await logout();
+      toastSuccess("Kamu telah keluar");
     }
   }
 
@@ -146,7 +160,7 @@ function Layout() {
             <p className="text-xs text-indigo-200">Petugas</p>
           </div>
           <button
-            onClick={logout}
+            onClick={handleLogout}
             title="Keluar"
             className="p-2 rounded-lg bg-primary-active hover:bg-primary-hover"
           >
