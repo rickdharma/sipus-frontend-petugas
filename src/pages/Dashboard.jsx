@@ -316,7 +316,7 @@ function Dashboard() {
                 </div>
                 <div>
                   <h2 className="text-sm font-bold text-slate-900 tracking-tight">Stok Menipis</h2>
-                  <p className="text-[11px] text-slate-500">Sisa stok ≤ {LOW_STOCK_THRESHOLD} eksemplar</p>
+                  <p className="text-[11px] text-slate-500">Sisa stok ≤ {LOW_STOCK_THRESHOLD}</p>
                 </div>
               </div>
               <Link
