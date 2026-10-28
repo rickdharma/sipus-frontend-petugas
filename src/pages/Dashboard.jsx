@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   BookOpen,
+  BookMarked,
   Bell,
   Bookmark,
   CheckCircle2,
@@ -68,28 +69,31 @@ function Dashboard() {
       label: "Total Koleksi Buku",
       hint: "Judul terdaftar di katalog",
       icon: BookOpen,
+      iconBg: "bg-blue-50 text-blue-600",
       to: "/buku",
     },
     {
       key: "pending_borrowings",
       label: "Permintaan Menunggu",
-      hint: "Perlu verifikasi petugas",
+      hint: "Menunggu verifikasi petugas",
       icon: Bell,
-      isPending: true,
+      iconBg: "bg-orange-50 text-orange-600",
       to: "/permintaan",
     },
     {
       key: "active_borrowings",
       label: "Sedang Dipinjam",
-      hint: "Buku aktif di peminjam",
-      icon: Bookmark,
+      hint: "Transaksi peminjaman aktif",
+      icon: BookMarked,
+      iconBg: "bg-emerald-50 text-emerald-600",
       to: "/pengembalian",
     },
     {
       key: "completed_borrowings",
       label: "Selesai Dikembalikan",
-      hint: "Transaksi terselesaikan",
+      hint: "Transaksi selesai",
       icon: CheckCircle2,
+      iconBg: "bg-emerald-50 text-emerald-600",
       to: "/riwayat",
     },
   ];
@@ -100,7 +104,18 @@ function Dashboard() {
         <div className="h-28 bg-white rounded-2xl border border-slate-200/80 shadow-2xs" />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-28 bg-white rounded-2xl border border-slate-200/80 shadow-2xs" />
+            <div key={i} className="bg-white rounded-xl border border-slate-200/80 shadow-2xs p-4 flex flex-col justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-slate-100" />
+                <div className="h-3.5 w-24 bg-slate-100 rounded" />
+              </div>
+              <div className="mt-2.5">
+                <div className="h-7 w-12 bg-slate-200 rounded" />
+                <div className="mt-2 pt-2 border-t border-slate-100">
+                  <div className="h-2.5 w-32 bg-slate-100 rounded" />
+                </div>
+              </div>
+            </div>
           ))}
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -155,45 +170,43 @@ function Dashboard() {
         </div>
       </div>
 
-      {/* 2. UNIFIED MONOCHROME KPI METRICS */}
+      {/* 2. STAT CARDS (COMPACT) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {cardConfig.map((card) => {
           const Icon = card.icon;
           const val = stats ? stats[card.key] ?? 0 : 0;
-          const isPendingAlert = card.isPending && val > 0;
 
           return (
             <Link
               key={card.key}
               to={card.to}
-              className={`bg-white rounded-2xl border p-5 shadow-2xs hover:border-slate-300 transition-colors flex flex-col justify-between group cursor-pointer ${
-                isPendingAlert ? "border-amber-300 bg-amber-50/20 hover:border-amber-400" : "border-slate-200/80"
-              }`}
+              className="bg-white rounded-xl border border-slate-200/80 p-4 shadow-2xs hover:border-slate-300 hover:shadow-xs transition-all flex flex-col justify-between cursor-pointer group"
             >
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-semibold text-slate-600 tracking-tight">{card.label}</span>
-                <div
-                  className={`w-8 h-8 rounded-lg border flex items-center justify-center ${
-                    isPendingAlert
-                      ? "bg-amber-100 text-amber-700 border-amber-200"
-                      : "bg-slate-100 text-slate-600 border-slate-200/80"
-                  }`}
-                >
-                  <Icon size={16} />
-                </div>
-              </div>
-
               <div>
-                <p className="text-3xl font-extrabold tracking-tight font-mono text-slate-900">{val}</p>
-                <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-100">
-                  <span className="text-[11px] text-slate-400 font-medium">{card.hint}</span>
-                  {isPendingAlert ? (
-                    <span className="text-[10px] font-semibold text-amber-700 bg-amber-100 px-1.5 py-0.2 rounded">
-                      Perlu tindakan
-                    </span>
-                  ) : (
-                    <ChevronRight size={13} className="text-slate-400 group-hover:text-indigo-600 transition-colors" />
-                  )}
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${card.iconBg}`}
+                  >
+                    <Icon size={16} />
+                  </div>
+                  <span className="text-xs sm:text-sm font-semibold text-slate-700 truncate">
+                    {card.label}
+                  </span>
+                </div>
+
+                <div className="mt-2.5">
+                  <p className="text-2xl font-bold tracking-tight text-slate-900">
+                    {val}
+                  </p>
+                  <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between">
+                    <p className="text-[11px] text-slate-400">
+                      {card.hint}
+                    </p>
+                    <ChevronRight
+                      size={13}
+                      className="text-slate-300 group-hover:text-slate-600 group-hover:translate-x-0.5 transition-all shrink-0"
+                    />
+                  </div>
                 </div>
               </div>
             </Link>
