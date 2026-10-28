@@ -119,8 +119,8 @@ function Dashboard() {
           ))}
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 h-72 bg-white rounded-2xl border border-slate-200/80 shadow-2xs" />
-          <div className="h-72 bg-white rounded-2xl border border-slate-200/80 shadow-2xs" />
+          <div className="lg:col-span-2 h-72 bg-white rounded-xl border border-slate-200/80 shadow-2xs" />
+          <div className="h-72 bg-white rounded-xl border border-slate-200/80 shadow-2xs" />
         </div>
       </div>
     );
@@ -217,11 +217,11 @@ function Dashboard() {
       {/* 3. MAIN WORKSPACE (2 COLUMNS) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* LEFT COLUMN (2/3): PENGAJUAN PEMINJAMAN TERBARU */}
-        <section className="lg:col-span-2 bg-white rounded-2xl border border-slate-200/80 shadow-2xs p-6 flex flex-col justify-between">
+        <section className="lg:col-span-2 bg-white rounded-xl border border-slate-200/80 shadow-2xs p-5 flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between pb-4 mb-4 border-b border-slate-100">
+            <div className="flex items-center justify-between pb-3.5 mb-3 border-b border-slate-100">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-slate-100 text-slate-600 border border-slate-200/80 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
                   <Clock size={15} />
                 </div>
                 <div>
@@ -250,21 +250,21 @@ function Dashboard() {
                 <p className="text-[11px] text-slate-400 mt-0.5">Semua permintaan peminjaman siswa sudah selesai diproses.</p>
               </div>
             ) : (
-              <div className="space-y-2.5">
+              <div className="divide-y divide-slate-100">
                 {recent.map((b) => (
                   <div
                     key={b.id}
-                    className="p-3.5 rounded-xl border border-slate-200/80 bg-slate-50/50 hover:bg-white hover:border-slate-300 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                    className="py-3 first:pt-0 last:pb-0 flex flex-col sm:flex-row sm:items-center justify-between gap-3 group"
                   >
                     <div className="flex items-start gap-3 min-w-0">
-                      <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-600 flex items-center justify-center shrink-0">
+                      <div className="w-8 h-8 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center shrink-0 mt-0.5">
                         <User size={15} />
                       </div>
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
                           <p className="text-xs sm:text-sm font-semibold text-slate-900 truncate">{b.borrower_name}</p>
                           {b.borrower_identity_number && (
-                            <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-slate-200/80 text-slate-600">
+                            <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-slate-100 text-slate-600">
                               {b.borrower_identity_number}
                             </span>
                           )}
@@ -272,7 +272,7 @@ function Dashboard() {
                         <p className="text-xs text-slate-600 truncate mt-0.5">
                           {b.items?.map((i) => `${i.book?.title ?? `Buku #${i.book_id}`} (×${i.quantity})`).join(", ")}
                         </p>
-                        <p className="text-[11px] text-slate-400 mt-1">
+                        <p className="text-[11px] text-slate-400 mt-0.5">
                           Diajukan: {formatDate(b.created_at)}
                         </p>
                       </div>
@@ -282,7 +282,7 @@ function Dashboard() {
                       <StatusBadge status={b.status} />
                       <Link
                         to="/permintaan"
-                        className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition-colors shadow-2xs"
+                        className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white text-xs font-semibold transition-colors shadow-2xs"
                       >
                         Verifikasi
                       </Link>
@@ -307,11 +307,11 @@ function Dashboard() {
         </section>
 
         {/* RIGHT COLUMN (1/3): STATUS STOK BUKU RENDAH */}
-        <section className="bg-white rounded-2xl border border-slate-200/80 shadow-2xs p-6 flex flex-col justify-between">
+        <section className="bg-white rounded-xl border border-slate-200/80 shadow-2xs p-5 flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between pb-4 mb-4 border-b border-slate-100">
+            <div className="flex items-center justify-between pb-3.5 mb-3 border-b border-slate-100">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-slate-100 text-slate-600 border border-slate-200/80 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
                   <AlertTriangle size={15} />
                 </div>
                 <div>
@@ -340,28 +340,36 @@ function Dashboard() {
                 <p className="text-[11px] text-slate-400 mt-0.5">Semua buku memiliki persediaan di atas batas minimum.</p>
               </div>
             ) : (
-              <div className="space-y-2.5">
+              <div className="divide-y divide-slate-100">
                 {lowStock.map((b) => (
                   <div
                     key={b.id}
-                    className="p-3 rounded-xl border border-slate-200/80 bg-slate-50/50 hover:bg-white hover:border-slate-300 transition-colors flex items-center justify-between gap-3"
+                    className="py-2.5 first:pt-0 last:pb-0 flex items-center justify-between gap-3 group"
                   >
                     <div className="min-w-0 flex-1">
-                      <p className="text-xs font-semibold text-slate-900 truncate">{b.title}</p>
-                      <p className="text-[11px] text-slate-500 truncate mt-0.5">{b.author}</p>
-                      <span className="text-[10px] font-mono text-slate-400">ISBN: {b.isbn ?? "-"}</span>
+                      <p className="text-xs font-semibold text-slate-900 truncate group-hover:text-indigo-600 transition-colors">
+                        {b.title}
+                      </p>
+                      <p className="text-[11px] text-slate-500 truncate mt-0.5">
+                        {b.author}
+                      </p>
+                      <p className="text-[10px] font-mono text-slate-400 mt-0.5">
+                        ISBN: {b.isbn || "-"}
+                      </p>
                     </div>
 
-                    <div className="shrink-0 text-right">
-                      <span
-                        className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-mono font-bold tracking-wider ${
-                          b.stock === 0
-                            ? "bg-rose-100 text-rose-800 border border-rose-300"
-                            : "bg-amber-100 text-amber-900 border border-amber-300"
-                        }`}
-                      >
-                        {b.stock === 0 ? "HABIS" : `Sisa ${b.stock}`}
-                      </span>
+                    <div className="shrink-0">
+                      {b.stock === 0 ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-rose-50 text-rose-600 border border-rose-100">
+                          <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0" />
+                          Habis
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-amber-50 text-amber-700 border border-amber-100">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
+                          Sisa {b.stock}
+                        </span>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -381,13 +389,13 @@ function Dashboard() {
         </section>
       </div>
 
-      {/* 4. SHORTCUT NAVIGATION TILES (UNIFIED NEUTRAL ICONS) */}
+      {/* 4. SHORTCUT NAVIGATION TILES */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
         <Link
           to="/peminjaman-langsung"
-          className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-2xs hover:border-slate-300 hover:shadow-xs transition-all flex items-center gap-3.5 group cursor-pointer"
+          className="p-4 rounded-xl bg-white border border-slate-200/80 shadow-2xs hover:border-slate-300 hover:shadow-xs transition-all flex items-center gap-3.5 group cursor-pointer"
         >
-          <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 text-slate-600 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
             <UserPlus size={18} />
           </div>
           <div className="min-w-0 flex-1">
@@ -396,14 +404,14 @@ function Dashboard() {
             </h3>
             <p className="text-[11px] text-slate-500">Catat transaksi sirkulasi langsung</p>
           </div>
-          <ChevronRight size={15} className="text-slate-400 group-hover:text-indigo-600 transition-colors" />
+          <ChevronRight size={15} className="text-slate-300 group-hover:text-slate-600 group-hover:translate-x-0.5 transition-all" />
         </Link>
 
         <Link
           to="/pengembalian"
-          className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-2xs hover:border-slate-300 hover:shadow-xs transition-all flex items-center gap-3.5 group cursor-pointer"
+          className="p-4 rounded-xl bg-white border border-slate-200/80 shadow-2xs hover:border-slate-300 hover:shadow-xs transition-all flex items-center gap-3.5 group cursor-pointer"
         >
-          <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 text-slate-600 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center shrink-0">
             <CornerDownLeft size={18} />
           </div>
           <div className="min-w-0 flex-1">
@@ -412,14 +420,14 @@ function Dashboard() {
             </h3>
             <p className="text-[11px] text-slate-500">Cek batas waktu & pengembalian</p>
           </div>
-          <ChevronRight size={15} className="text-slate-400 group-hover:text-indigo-600 transition-colors" />
+          <ChevronRight size={15} className="text-slate-300 group-hover:text-slate-600 group-hover:translate-x-0.5 transition-all" />
         </Link>
 
         <Link
           to="/riwayat"
-          className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-2xs hover:border-slate-300 hover:shadow-xs transition-all flex items-center gap-3.5 group cursor-pointer"
+          className="p-4 rounded-xl bg-white border border-slate-200/80 shadow-2xs hover:border-slate-300 hover:shadow-xs transition-all flex items-center gap-3.5 group cursor-pointer"
         >
-          <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 text-slate-600 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
             <FileText size={18} />
           </div>
           <div className="min-w-0 flex-1">
@@ -428,7 +436,7 @@ function Dashboard() {
             </h3>
             <p className="text-[11px] text-slate-500">Arsip seluruh transaksi sirkulasi</p>
           </div>
-          <ChevronRight size={15} className="text-slate-400 group-hover:text-indigo-600 transition-colors" />
+          <ChevronRight size={15} className="text-slate-300 group-hover:text-slate-600 group-hover:translate-x-0.5 transition-all" />
         </Link>
       </div>
     </div>
