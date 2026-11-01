@@ -13,6 +13,7 @@ const emptyForm = {
   publication_year: "",
   isbn: "",
   stock: "",
+  rack_location: "",
   description: "",
 };
 
@@ -52,6 +53,7 @@ function KelolaBuku() {
       publication_year: book.publication_year ?? "",
       isbn: book.isbn ?? "",
       stock: book.stock ?? "",
+      rack_location: book.rack_location ?? "",
       description: book.description ?? "",
     });
     setCoverFile(null);
@@ -122,6 +124,15 @@ function KelolaBuku() {
     {
       header: "Stok",
       cell: (b) => <span className={`font-bold ${b.stock === 0 ? "text-danger" : ""}`}>{b.stock}</span>,
+    },
+    {
+      header: "Lokasi Rak",
+      cell: (b) =>
+        b.rack_location ? (
+          <span className="whitespace-nowrap">{b.rack_location}</span>
+        ) : (
+          <span className="text-slate-400">-</span>
+        ),
     },
     {
       header: "Aksi",
@@ -284,6 +295,21 @@ function KelolaBuku() {
                 className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm font-semibold text-slate-800 placeholder:text-slate-400 shadow-2xs transition-all duration-150 hover:border-slate-300 focus:border-indigo-600 focus:outline-none focus:ring-4 focus:ring-indigo-500/10"
               />
             </div>
+          </div>
+
+          {/* Lokasi Rak */}
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1.5 tracking-tight">
+              Lokasi Rak <span className="text-slate-400 font-normal">(opsional)</span>
+            </label>
+            <input
+              name="rack_location"
+              type="text"
+              value={form.rack_location}
+              onChange={handleChange}
+              placeholder="Contoh: Rak A-02"
+              className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 shadow-2xs transition-all duration-150 hover:border-slate-300 focus:border-indigo-600 focus:outline-none focus:ring-4 focus:ring-indigo-500/10"
+            />
           </div>
 
           {/* Deskripsi */}
